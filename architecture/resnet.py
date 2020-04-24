@@ -5,6 +5,7 @@ import tensorflow.keras as K
 class ResNet:
     def __init__(self, params):
         super(ResNet, self).__init__()
+
         model_config = {
             10: {'block': self.residual_block, 'layers': [1, 1, 1, 1]},
             18: {'block': self.residual_block, 'layers': [2, 2, 2, 2]},
