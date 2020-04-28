@@ -45,7 +45,7 @@ class YoloData:
             grid[grid_y, grid_x, 4] = 1.
             grid[grid_y, grid_x, label-self.classes] = 1.
 
-        grid = np.concatenate([grid[..., :5], grid], axis=-1)
+        # grid = np.concatenate([grid[..., :5], grid], axis=-1)
 
         return grid
 

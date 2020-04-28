@@ -30,13 +30,11 @@ CFG = {
             'schedule': 'PiecewiseConstantDecay',
             'boundaries': [60000, 90000],
             'values': [1e-4, 1e-5, 1e-6],
-            'warmup_learning_rate': 0.,
+            'warmup_learning_rate': 1e-5,
             'warmup_steps': 2000,
         },
         'optimizer': {
-            'policy': 'SGD',
-            'momentum': .9,
-            'nesterov': False,
+            'policy': 'Adam',
         }
     }
 }

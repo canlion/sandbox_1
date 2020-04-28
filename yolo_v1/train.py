@@ -91,15 +91,16 @@ def eval(x, y, mp=False):
 
 if __name__ == '__main__':
     report_format = '{} steps - train loss : {:.3f} / validation loss : {:.3f}'
+    train_fn = train_network_mp if mp else train
+    ignored_step = 0
 
     for step, (x, y) in enumerate(train_ds):
-        if mp:
-            t_loss = train_network_mp(x, y)
-        else:
-            t_loss = train(x, y)
+        t_loss = train_fn(x, y)
 
         if step % 100 == 0:
-            print('{} step - train loss : {}'.format(step, t_loss))
+            opt_step = tf.cast(optimizer._optimizer._iterations if mp else optimizer._iterations, tf.float32)
+            ignored_step = (step - opt_step)
+            print('{} step - train loss : {} / lr : {:.6f} / ignored step : {}'.format(step, t_loss, optimizer.lr(opt_step), ignored_step))
 
         if step and step % params.train.eval_step == 0:
             for x, y in eval_ds:
