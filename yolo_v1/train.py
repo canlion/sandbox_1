@@ -97,7 +97,7 @@ if __name__ == '__main__':
     for step, (x, y) in enumerate(train_ds):
         t_loss = train_fn(x, y)
 
-        if step % 100 == 0:
+        if step % (params.train.eval_step//10) == 0:
             opt_step = tf.cast(optimizer._optimizer._iterations if mp else optimizer._iterations, tf.float32)
             ignored_step = (step - opt_step)
             print('{} step - train loss : {} / lr : {:.6f} / ignored step : {}'.format(step, t_loss, optimizer.lr(opt_step), ignored_step))

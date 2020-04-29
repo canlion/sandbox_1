@@ -23,13 +23,13 @@ CFG = {
     },
     'train': {
         'mixed_precision': True,
-        'total_step': 120000,
+        'total_step': 240000,
         'eval_step': 2000,
-        'batch_size': 8,
+        'batch_size': 16,
         'learning_rate': {
             'schedule': 'PiecewiseConstantDecay',
-            'boundaries': [60000, 90000],
-            'values': [1e-4, 1e-5, 1e-6],
+            'boundaries': [120000, 180000],
+            'values': [2e-4, 2e-5, 2e-6],
             'warmup_learning_rate': 1e-5,
             'warmup_steps': 2000,
         },

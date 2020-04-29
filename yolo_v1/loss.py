@@ -36,10 +36,8 @@ class YoloV1Loss(tf.keras.losses.Loss):
         noobj_1_ij = 1. - obj_1  # n, S, S, 1
 
         # bndbox loss
-        xy, xy_pred = true_bndbox[..., :2], pred_bndbox[..., :2]
-        xy_loss = tf.reduce_sum(obj_1_ij[..., None] * tf.square(xy - xy_pred), axis=[1, 2, 3, 4])
-        wh, wh_pred = true_bndbox[..., 2:4], pred_bndbox[..., 2:4]
-        wh_loss = tf.reduce_sum(obj_1_ij[..., None] * tf.square(wh - wh_pred), axis=[1, 2, 3, 4])
+        xywh, xywh_pred = true_bndbox[..., :2], pred_bndbox[..., :2]
+        xywh_loss = tf.reduce_sum(obj_1_ij[..., None] * tf.square(xywh - xywh_pred), axis=[1, 2, 3, 4])
 
         # objectness loss
         C, C_pred = iou, pred_bndbox[..., -1]
@@ -47,7 +45,7 @@ class YoloV1Loss(tf.keras.losses.Loss):
         C_obj_loss = tf.reduce_sum(obj_1_ij * tf.square(1. - C_pred), axis=[1, 2, 3])
         C_noobj_loss = tf.reduce_sum(noobj_1_ij * tf.square(C_pred), axis=[1, 2, 3])
 
-        loss = self.lambda_coord * (xy_loss+wh_loss) + C_obj_loss + self.lambda_noobj * C_noobj_loss
+        loss = self.lambda_coord * xywh_loss + C_obj_loss + self.lambda_noobj * C_noobj_loss
         return tf.reduce_mean(loss)
 
     def IOU(self, bndbox_0, bndbox_1, S, B):
