@@ -86,7 +86,6 @@ class YoloData:
                                                     x['ymin'], x['xmax'], x['ymax'], False],
                                                    [tf.float32, tf.float32])
 
-
     def train_batch_generator(self, ds, batch_size, core=8):
         def map_fn(x):
             return x['image'], x['label'], [x['xmin'], x['ymin'], x['xmax'], x['ymax']]
@@ -145,6 +144,3 @@ class YoloData:
 
         ds = ds.map(map_fn, tf.data.experimental.AUTOTUNE)
         return generator(ds)
-
-
-
