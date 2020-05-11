@@ -1,7 +1,7 @@
-import importlib
 from collections import namedtuple
 
-def dict2namedtuple(elem:dict)-> namedtuple:
+
+def dict2namedtuple(elem: dict)-> namedtuple:
     """Convert configuration dict to namedtuple"""
     if isinstance(elem, dict):
         for key, val in elem.items():
