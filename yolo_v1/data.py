@@ -16,11 +16,11 @@ class YoloData:
         self.aug_seq = imgaug.augmenters.Sequential([
             imgaug.augmenters.MultiplyHueAndSaturation(mul_hue=(0.5, 1.5), mul_saturation=(0.5, 1.5)),
             imgaug.augmenters.MultiplyBrightness(mul=(0.8, 1.2)),
-            imgaug.augmenters.contrast.GammaContrast(gamma=(0.7, 1.3)),
+            imgaug.augmenters.contrast.GammaContrast(gamma=(0.8, 1.2)),
             imgaug.augmenters.Fliplr(0.5),
-            imgaug.augmenters.Affine(rotate=(-3, 3), shear=(-3, 3)),
-            imgaug.augmenters.CropAndPad(percent=(-.1, .1)),
-            imgaug.augmenters.GaussianBlur(sigma=(0.0, 4.0))
+            # imgaug.augmenters.Affine(rotate=(-3, 3), shear=(-3, 3)),
+            imgaug.augmenters.CropAndPad(percent=(-.1, 0)),
+            imgaug.augmenters.GaussianBlur(sigma=(0.0, 1.0))
         ])
         self.map_fn()
 
@@ -31,6 +31,8 @@ class YoloData:
             bndbox = tf.clip_by_value(bndbox, 1e-4, 1 - 1e-4)
             center_x, center_y = (bndbox[:2] + bndbox[2:]) / 2
             w, h = bndbox[2:] - bndbox[:2]
+            # if w < .05 or h < .05:
+            #     continue
 
             grid_x, x = np.divmod(center_x, 1/self.S)
             grid_y, y = np.divmod(center_y, 1/self.S)
@@ -45,7 +47,7 @@ class YoloData:
             grid[grid_y, grid_x, 4] = 1.
             grid[grid_y, grid_x, label-self.classes] = 1.
 
-        # grid = np.concatenate([grid[..., :5], grid], axis=-1)
+        grid = np.concatenate([grid[..., :5], grid], axis=-1)
 
         return grid
 

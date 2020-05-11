@@ -22,35 +22,39 @@ class YoloV1Loss(tf.keras.losses.Loss):
 
     @tf.function
     def call(self, true, pred):
-        true_bndbox, pred_bndbox = true[..., :5], pred[..., :self.B * 5]
-        true_bndbox = tf.reshape(true_bndbox, (-1, self.S, self.S, 1, 5))
-        pred_bndbox = tf.reshape(pred_bndbox, (-1, self.S, self.S, self.B, 5))
+        true_bndbox, pred_bndbox = true[..., :self.B * 5], pred[..., :self.B * 5]
+        bndbox_shape = (-1, self.S, self.S, self.B, 5)
+        true_bndbox = tf.reshape(true_bndbox, bndbox_shape)
+        pred_bndbox = tf.reshape(pred_bndbox, bndbox_shape)
 
         # iou
         iou = self.IOU(true_bndbox, pred_bndbox, self.S, self.B)  # n, S, S, B
         iou_onehot = tf.one_hot(tf.argmax(iou, axis=-1), depth=self.B, axis=-1)  # n, S, S, B
 
         # responsibility
-        obj_1 = true_bndbox[..., 4]  # n, S, S, 1
-        obj_1_ij = obj_1 * iou_onehot  # n, S, S, B
-        noobj_1_ij = 1. - obj_1  # n, S, S, 1
+        obj_1 = true_bndbox[..., 4]  # n, S, S, B -> (0, 0) / (1, 1)
+        obj_1_ij = obj_1 * iou_onehot  # n, S, S, B -> (0, 0) / (1, 0) , (0, 1)
+        noobj_1_ij = 1. - obj_1  # n, S, S, B -> (1, 1) / (0, 0)
+
+        obj_true_bndbox = true_bndbox * obj_1_ij[..., None]
+        obj_pred_bndbox = pred_bndbox * obj_1_ij[..., None]
+        noobj_pred_bndbox = pred_bndbox * noobj_1_ij[..., None]
 
         # bndbox loss
-        xywh, xywh_pred = true_bndbox[..., :2], pred_bndbox[..., :2]
-        xywh_loss = tf.reduce_sum(obj_1_ij[..., None] * tf.square(xywh - xywh_pred), axis=[1, 2, 3, 4])
+        xywh, xywh_pred = obj_true_bndbox[..., :4], obj_pred_bndbox[..., :4]
+        xywh_loss = tf.reduce_sum(tf.square(xywh - xywh_pred), axis=[1, 2, 3, 4])
 
         # objectness loss
-        C, C_pred = iou, pred_bndbox[..., -1]
-        # C_obj_loss = tf.reduce_sum(obj_1_ij * tf.square(C - C_pred), axis=[1, 2, 3])
-        C_obj_loss = tf.reduce_sum(obj_1_ij * tf.square(1. - C_pred), axis=[1, 2, 3])
-        C_noobj_loss = tf.reduce_sum(noobj_1_ij * tf.square(C_pred), axis=[1, 2, 3])
+        C, C_obj_pred, C_noobj_pred = obj_true_bndbox[..., -1], obj_pred_bndbox[..., -1], noobj_pred_bndbox[..., -1]
+        C_obj_loss = tf.reduce_sum(tf.square(C - C_obj_pred), axis=[1, 2, 3])
+        C_noobj_loss = tf.reduce_sum(tf.square(C_noobj_pred), axis=[1, 2, 3])
 
         loss = self.lambda_coord * xywh_loss + C_obj_loss + self.lambda_noobj * C_noobj_loss
         return tf.reduce_mean(loss)
 
     def IOU(self, bndbox_0, bndbox_1, S, B):
         #  bndbox : n, S, S, 1, 5 / n, S, S, B, 5
-        bndbox_0 = tf.tile(bndbox_0, (1, 1, 1, B, 1))
+        # bndbox_0 = tf.tile(bndbox_0, (1, 1, 1, B, 1))
         bndbox = tf.stack([bndbox_0, bndbox_1], axis=-1)  # n, S, S, B, 5, 2
 
         xy = bndbox[..., :2, :]
