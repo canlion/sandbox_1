@@ -32,7 +32,7 @@ class YoloV1Loss(tf.keras.losses.Loss):
         iou_onehot = tf.one_hot(tf.argmax(iou, axis=-1), depth=self.B, axis=-1)  # n, S, S, B
 
         # responsibility
-        obj_1 = true_bndbox[..., 4]  # n, S, S, B -> (0, 0) / (1, 1)
+        obj_1 = true[..., 4, tf.newaxis]  # n, S, S, B -> (0, 0) / (1, 1)
         obj_1_ij = obj_1 * iou_onehot  # n, S, S, B -> (0, 0) / (1, 0) , (0, 1)
         noobj_1_ij = 1. - obj_1  # n, S, S, B -> (1, 1) / (0, 0)
 
@@ -49,7 +49,11 @@ class YoloV1Loss(tf.keras.losses.Loss):
         C_obj_loss = tf.reduce_sum(tf.square(C - C_obj_pred), axis=[1, 2, 3])
         C_noobj_loss = tf.reduce_sum(tf.square(C_noobj_pred), axis=[1, 2, 3])
 
-        loss = self.lambda_coord * xywh_loss + C_obj_loss + self.lambda_noobj * C_noobj_loss
+        # classification loss
+        c, c_pred = true[..., -self.classes:] * obj_1, pred[..., -self.classes:] * obj_1
+        c_loss = tf.reduce_sum(tf.square(c - c_pred), axis=[1, 2, 3])
+
+        loss = self.lambda_coord * xywh_loss + C_obj_loss + self.lambda_noobj * C_noobj_loss + c_loss
         return tf.reduce_mean(loss)
 
     def IOU(self, bndbox_0, bndbox_1, S, B):
