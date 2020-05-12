@@ -44,12 +44,12 @@ loss_mean_train = tf.keras.metrics.Mean(name='loss_train')
 loss_mean_eval = tf.keras.metrics.Mean(name='loss_eval')
 
 # tensorboard
-# current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-# log_dir_path = './tensorboard/' + current_time + '/{}'
-# log_dir_train = log_dir_path.format('train')
-# log_dir_eval = log_dir_path.format('eval')
-# summary_writer_train = tf.summary.create_file_writer(log_dir_train)
-# summary_writer_eval = tf.summary.create_file_writer(log_dir_eval)
+current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+log_dir_path = './tensorboard/' + current_time + '/{}'
+log_dir_train = log_dir_path.format('train')
+log_dir_eval = log_dir_path.format('eval')
+summary_writer_train = tf.summary.create_file_writer(log_dir_train)
+summary_writer_eval = tf.summary.create_file_writer(log_dir_eval)
 
 
 @tf.function
@@ -107,10 +107,10 @@ if __name__ == '__main__':
                 eval(x, y)
 
             print(report_format.format(step, loss_mean_train.result(), loss_mean_eval.result()))
-            # with summary_writer_train.as_default():
-            #     tf.summary.scalar('loss', loss_mean_train.result(), step=step)
-            # with summary_writer_eval.as_default():
-            #     tf.summary.scalar('loss', loss_mean_eval.result(), step=step)
+            with summary_writer_train.as_default():
+                tf.summary.scalar('loss', loss_mean_train.result(), step=step)
+            with summary_writer_eval.as_default():
+                tf.summary.scalar('loss', loss_mean_eval.result(), step=step)
             loss_mean_train.reset_states()
             loss_mean_eval.reset_states()
 
