@@ -34,6 +34,7 @@ class YoloV1(tf.keras.Model):
             # tf.keras.layers.Dense(self.S*self.S*(self.B*5+self.classes), kernel_regularizer=self.regularizer),
             # tf.keras.layers.Reshape((self.S, self.S, (self.B*5+self.classes))),
             ResidualBlock(256, 2, self.regularizer, True, self.negative_slope),
+            ResidualBlock(256, 1, self.regularizer, True, self.negative_slope),
             ResidualBlock(128, 1, self.regularizer, True, self.negative_slope),
             tf.keras.layers.Conv2D(self.B * 5 + self.classes, 1, 1, 'same',
                                    kernel_regularizer=self.regularizer,
