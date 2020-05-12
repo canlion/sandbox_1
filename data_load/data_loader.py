@@ -14,7 +14,7 @@ class DataLoader:
         else:
             raise Exception('not supported dataset.')
 
-    def set_ds(self, map_fn = None, training=True):
+    def set_ds(self, map_fn=None, training=True):
         if training:
             ds = self.train_dataset.map(self.parser, tf.data.experimental.AUTOTUNE)
             ds = ds.repeat().shuffle(1000)

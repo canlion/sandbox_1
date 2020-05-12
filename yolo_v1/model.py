@@ -33,10 +33,11 @@ class YoloV1(tf.keras.Model):
             # tf.keras.layers.Dropout(.5),
             # tf.keras.layers.Dense(self.S*self.S*(self.B*5+self.classes), kernel_regularizer=self.regularizer),
             # tf.keras.layers.Reshape((self.S, self.S, (self.B*5+self.classes))),
-            ResidualBlock(512, 2, self.regularizer, True, self.negative_slope),
-            ResidualBlock(256, 1, self.regularizer, True, self.negative_slope),
+            ResidualBlock(256, 2, self.regularizer, True, self.negative_slope),
+            ResidualBlock(128, 1, self.regularizer, True, self.negative_slope),
             tf.keras.layers.Conv2D(self.B * 5 + self.classes, 1, 1, 'same',
                                    kernel_regularizer=self.regularizer,
+                                   kernel_initializer=tf.keras.initializers.he_normal(),
                                    activation='linear')
         ])
 
@@ -54,18 +55,22 @@ class ResidualBlock(tf.keras.Model):
 
         if self.match_dims:
             self.seq_shortcut = tf.keras.Sequential([
-                tf.keras.layers.Conv2D(filters * 4, 1, strides, 'same', kernel_regularizer=regularizer),
+                tf.keras.layers.Conv2D(filters * 4, 1, strides, 'same', kernel_regularizer=regularizer,
+                                       kernel_initializer=tf.keras.initializers.he_normal()),
                 tf.keras.layers.BatchNormalization()
             ])
 
         self.seq = tf.keras.Sequential([
-            tf.keras.layers.Conv2D(filters, 1, strides, 'same', kernel_regularizer=regularizer),
+            tf.keras.layers.Conv2D(filters, 1, strides, 'same', kernel_regularizer=regularizer,
+                                   kernel_initializer=tf.keras.initializers.he_normal()),
             tf.keras.layers.BatchNormalization(),
             tf.keras.layers.ReLU(negative_slope=self.negative_slope),
-            tf.keras.layers.Conv2D(filters, 3, 1, 'same', kernel_regularizer=regularizer),
+            tf.keras.layers.Conv2D(filters, 3, 1, 'same', kernel_regularizer=regularizer,
+                                   kernel_initializer=tf.keras.initializers.he_normal()),
             tf.keras.layers.BatchNormalization(),
             tf.keras.layers.ReLU(negative_slope=self.negative_slope),
-            tf.keras.layers.Conv2D(filters * 4, 1, 1, 'same', kernel_regularizer=regularizer),
+            tf.keras.layers.Conv2D(filters * 4, 1, 1, 'same', kernel_regularizer=regularizer,
+                                   kernel_initializer=tf.keras.initializers.he_normal()),
             tf.keras.layers.BatchNormalization(),
         ])
 
