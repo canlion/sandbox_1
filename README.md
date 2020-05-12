@@ -1,6 +1,8 @@
 Deep Learning Study
 ===================
 
+2080Ti / 2080 / 1080Ti * 4
+
 Object Detection
 ----------------
 1. YOLO series
