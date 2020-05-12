@@ -1,7 +1,6 @@
 Deep Learning Study
 ===================
 
-GPU : 2080Ti / 2080 / 1080Ti * 4
 
 Object Detection
 ----------------
