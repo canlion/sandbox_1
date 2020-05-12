@@ -1,6 +1,9 @@
 Deep Learning Study
 ===================
 
+Python3 & Tensorflow2
+
+export PYTHONPATH=${PYTHONPATH}:/.../sandbox_1
 
 Object Detection
 ----------------
