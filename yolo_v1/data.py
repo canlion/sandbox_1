@@ -18,9 +18,9 @@ class YoloData:
             imgaug.augmenters.MultiplyBrightness(mul=(0.8, 1.2)),
             imgaug.augmenters.contrast.GammaContrast(gamma=(0.8, 1.2)),
             imgaug.augmenters.Fliplr(0.5),
-            # imgaug.augmenters.Affine(rotate=(-3, 3), shear=(-3, 3)),
-            imgaug.augmenters.CropAndPad(percent=(-.1, 0)),
-            imgaug.augmenters.GaussianBlur(sigma=(0.0, 1.0))
+            imgaug.augmenters.Affine(rotate=(-1, 1), shear=(-1, 1)),
+            imgaug.augmenters.CropAndPad(percent=(-.1, 1)),
+            imgaug.augmenters.GaussianBlur(sigma=(0.0, 1.0)),
         ])
         self.map_fn()
 
@@ -78,14 +78,13 @@ class YoloData:
 
     def map_fn(self):
         self.map_fn_train = lambda x: tf.py_function(self.yolo_data,
-                                                    [x['image'], x['label'], x['xmin'],
-                                                     x['ymin'], x['xmax'], x['ymax'], True],
+                                                    [x['image'], x['label'],
+                                                     x['xmin'], x['ymin'], x['xmax'], x['ymax'], True],
                                                     [tf.float32, tf.float32])
         self.map_fn_eval = lambda x: tf.py_function(self.yolo_data,
-                                                   [x['image'], x['label'], x['xmin'],
-                                                    x['ymin'], x['xmax'], x['ymax'], False],
+                                                   [x['image'], x['label'],
+                                                    x['xmin'], x['ymin'], x['xmax'], x['ymax'], False],
                                                    [tf.float32, tf.float32])
-
 
     def train_batch_generator(self, ds, batch_size, core=8):
         def map_fn(x):
@@ -129,7 +128,6 @@ class YoloData:
                     grids.append(self.yolo_label(bndbox, label))
 
                 return np.stack(img_list, axis=0), np.stack(grids, axis=0)
-
 
             img_list, label_list, coord_list = list(), list(), list()
             for img, label, coord in ds:
