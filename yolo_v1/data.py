@@ -143,6 +143,3 @@ class YoloData:
 
         ds = ds.map(map_fn, tf.data.experimental.AUTOTUNE)
         return generator(ds)
-
-
-
