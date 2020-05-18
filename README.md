@@ -1,7 +1,7 @@
 Deep Learning Study
 ===================
 
-Python3 & Tensorflow2
+Python3 & Tensorflow2 or pytorch
 
 export PYTHONPATH=${PYTHONPATH}:/.../sandbox_1
 
