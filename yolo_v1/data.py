@@ -19,7 +19,7 @@ class YoloData:
             imgaug.augmenters.contrast.GammaContrast(gamma=(0.8, 1.2)),
             imgaug.augmenters.Fliplr(0.5),
             imgaug.augmenters.Affine(rotate=(-1, 1), shear=(-1, 1)),
-            imgaug.augmenters.CropAndPad(percent=(-.1, 1)),
+            imgaug.augmenters.CropAndPad(percent=(-.1, .1)),
             imgaug.augmenters.GaussianBlur(sigma=(0.0, 1.0)),
         ])
         self.map_fn()
