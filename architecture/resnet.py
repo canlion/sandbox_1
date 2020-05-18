@@ -4,7 +4,7 @@ import tensorflow.keras as K
 
 class ResNet:
     def __init__(self, params):
-        super(ResNet, self).__init__()
+        # super(ResNet, self).__init__()
 
         model_config = {
             10: {'block': self.residual_block, 'layers': [1, 1, 1, 1]},
@@ -17,7 +17,7 @@ class ResNet:
         }
 
         model_weights = {
-            50: '/root/.keras/models/resnet50_weights_tf_dim_ordering_tf_kernels_notop.h5'
+            50: '/hdd/jinwoo/sandbox_datasets/pre_trained/resnet50_weights_tf_dim_ordering_tf_kernels_notop.h5'
         }
 
         architecture = model_config[params.network.backbone.depth]
@@ -25,25 +25,25 @@ class ResNet:
         self.n_list = architecture['layers']
         self.input_size = params.network.input_size
         self.regularizer = tf.keras.regularizers.l2(params.network.backbone.l2_decay)
-        self.negative_slope = params.network.negative_slope
+        self.negative_slope = params.network.backbone.negative_slope
 
-        self.network = self.generate_network()
+        self.network, self.intermediate = self.generate_network()
         self.network.load_weights(model_weights[params.network.backbone.depth])
         self.preprocess_input = tf.keras.applications.resnet.preprocess_input
 
-    def generate_network(self)-> tf.keras.Model:
-        inputs = K.layers.Input(self.input_size)
+    def generate_network(self):
+        inputs = K.layers.Input(self.input_size, name='input_resnet')
         x = K.layers.Conv2D(64, 7, 2, 'same', kernel_regularizer=self.regularizer)(inputs)
         x = K.layers.BatchNormalization()(x)
-        x = K.layers.ReLU(negative_slope=self.negative_slope)(x)
-        x = K.layers.MaxPool2D(3, 2, padding='same')(x)
+        x_0 = K.layers.ReLU(negative_slope=self.negative_slope)(x)
+        x = K.layers.MaxPool2D(3, 2, padding='same')(x_0)
 
-        x = self.group_block(self.block, x, 64, 1, self.n_list[0])
-        x = self.group_block(self.block, x, 128, 2, self.n_list[1])
-        x = self.group_block(self.block, x, 256, 2, self.n_list[2])
-        x = self.group_block(self.block, x, 512, 2, self.n_list[3])
+        x_1 = self.group_block(self.block, x, 64, 1, self.n_list[0])
+        x_2 = self.group_block(self.block, x_1, 128, 2, self.n_list[1])
+        x_3 = self.group_block(self.block, x_2, 256, 2, self.n_list[2])
+        x_4 = self.group_block(self.block, x_3, 512, 2, self.n_list[3])
 
-        return K.models.Model(inputs, x)
+        return K.models.Model(inputs, x_4), [x_0, x_1, x_2, x_3, x_4]
 
     # @staticmethod
     def group_block(self, block, inputs, filters, strides, n):
