@@ -12,16 +12,29 @@ class DenseDepthLoss(nn.Module):
 
     def __init__(self):
         super().__init__()
+        self.gradient_module = ImageGradient()
+        self.ssim_module = SSIM(1000.-10.)
+
+    def forward(self, pred, target):
+        l1_loss = F.l1_loss(pred, target).mean()
+
+        pred_grad = self.gradient_module(pred)
+        target_grad = self.gradient_module(target)
+        grad_loss = F.l1_loss(pred_grad, target_grad)
+
+        ssim_loss = (1. - self.ssim_module(pred, target)) / 2.
+
+        return .1 * l1_loss + grad_loss + ssim_loss
 
 
 class ImageGradient(nn.Module):
     """Calculate depth-map gradient."""
 
-    def __init__(self, device):
+    def __init__(self):
         super().__init__()
         self.gradient_kernel = torch.tensor([[[0, 0, 0], [-1, 0, 1], [0, 0, 0]],
                                              [[0, -1, 0], [0, 0, 0], [0, 1, 0]]],
-                                            dtype=torch.float, device=device, requires_grad=False)
+                                            dtype=torch.float, requires_grad=False)
         self.gradient_kernel = self.gradient_kernel.view(2, 1, 3, 3)
 
     def forward(self, depth):
@@ -29,22 +42,22 @@ class ImageGradient(nn.Module):
         return F.conv2d(depth, kernel, stride=1, padding=1)
 
 class SSIM(nn.Module):
-    def __init__(self, dynamic_range=9.6, exponents=(1, 1, 1), radius=1.5, window_size=11):
+    def __init__(self, dynamic_range=9.6, exponents=(1, 1, 1), sigma=1.5, window_size=11):
         super().__init__()
         self.C1 = (.01 * dynamic_range) ** 2
         self.C2 = (.03 * dynamic_range) ** 2
         self.C3 = self.C2 / 2
 
         self.exponents = exponents
-        self.gaussian_kernel = torch.tensor(self.make_gaussian_filter(window_size, radius), dtype=torch.float)
+        self.gaussian_kernel = torch.tensor(self.make_gaussian_filter(window_size, sigma), dtype=torch.float)
 
     def forward(self, pred, target):
         mu_kernel = self.gaussian_kernel.to(pred.device)
 
         mu_pred = F.conv2d(pred, mu_kernel)
         mu_target = F.conv2d(target, mu_kernel)
-        var_pred = F.conv2d(torch.square(pred), mu_kernel) - mu_pred.square()
-        var_target = F.conv2d(torch.square(target), mu_kernel) - mu_target.square()
+        var_pred = F.conv2d(pred.square(), mu_kernel) - mu_pred.square()
+        var_target = F.conv2d(target.square(), mu_kernel) - mu_target.square()
         cov_pred_target = F.conv2d(target * pred, mu_kernel) - mu_target * mu_pred
 
         l = (2 * mu_pred * mu_target + self.C1) / (mu_pred.square() + mu_target.square() + self.C1)
@@ -57,12 +70,11 @@ class SSIM(nn.Module):
         return ssim.mean()
 
     @staticmethod
-    def make_gaussian_filter(window_size, radius):
+    def make_gaussian_filter(window_size, sigma):
         assert (window_size >= 3) and (window_size % 2 == 1)
         k = (window_size-1)//2
-        probs = [np.exp(-z*z/(2*(radius**2)))/np.sqrt(2*np.pi*(radius**2)) for z in range(-k, k+1)]
+        probs = [np.exp(-z * z / (2 * (sigma ** 2))) / np.sqrt(2 * np.pi * (sigma ** 2)) for z in range(-k, k + 1)]
         kernel = np.outer(probs, probs).reshape(1, 1, window_size, window_size)
-        print(kernel)
         return kernel
 
 
