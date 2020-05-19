@@ -40,12 +40,19 @@ class Decoder(nn.Module):
 
     def __init__(self):
         super().__init__()
-        self.conv0 = nn.Conv2d(2208, 1664, 1, 1, 0)
-        self.upconv0 = UpConv(in_ch=1664+384, out_ch=832)
-        self.upconv1 = UpConv(in_ch=832+192, out_ch=416)
-        self.upconv2 = UpConv(in_ch=416+96, out_ch=208)
-        self.upconv3 = UpConv(in_ch=208+96, out_ch=104)
-        self.conv_last = nn.Conv2d(104, 1, 3, 1, 2)
+        # self.conv0 = nn.Conv2d(2208, 1664, 1, 1, 0)
+        # self.upconv0 = UpConv(in_ch=1664+384, out_ch=832)
+        # self.upconv1 = UpConv(in_ch=832+192, out_ch=416)
+        # self.upconv2 = UpConv(in_ch=416+96, out_ch=208)
+        # self.upconv3 = UpConv(in_ch=208+96, out_ch=104)
+        # self.conv_last = nn.Conv2d(104, 1, 3, 1, 1)
+
+        self.conv0 = nn.Conv2d(2208, 896, 1, 1, 0)
+        self.upconv0 = UpConv(in_ch=896+384, out_ch=448)
+        self.upconv1 = UpConv(in_ch=448+192, out_ch=224)
+        self.upconv2 = UpConv(in_ch=224+96, out_ch=112)
+        self.upconv3 = UpConv(in_ch=112+96, out_ch=56)
+        self.conv_last = nn.Conv2d(56, 1, 3, 1, 1)
 
     def forward(self, features):
         x = features[-1]
@@ -72,3 +79,12 @@ class UpConv(nn.Module):
         x = F.leaky_relu(self.conv0(concat_tensor), negative_slope=.2)
         x = F.leaky_relu(self.conv1(x), negative_slope=.2)
         return x
+
+
+if __name__ == '__main__':
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    inputs = torch.randn(3, 3, 480, 640, device=device)
+    model = DenseDepth()
+    model.to(device)
+
+    print('device : {} / inputs : {} / model output : {}'.format(device, inputs.size(), model(inputs).size()))
