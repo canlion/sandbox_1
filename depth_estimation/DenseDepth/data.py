@@ -49,11 +49,10 @@ class NYUDataset(Dataset):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
         depth_path = image_path.replace(self.depth_replace['old'], self.depth_replace['new'])
-        # depth = cv2.imread(depth_path, cv2.IMREAD_GRAYSCALE)
-        # depth = 1000. / np.clip(depth / 255. * 1000., 10., 1000.) if self.is_train_set else 1000. / (depth * 10.)
         depth = np.asarray(Image.open(depth_path))
-        depth = 1000. / np.clip(1000*depth/255., 10., 1000.) if self.is_train_set \
-            else 1000. / (depth / 10.)
+        # depth = 1000. / np.clip(1000*depth/255., 0., 1000.) if self.is_train_set \
+        #     else 1000. / (depth / 10.)
+        depth = 1. - ((depth - depth.min()) / (depth.max() - depth.min()))
 
         sample = {'image': image, 'depth': depth, 'name': image_name}
         sample = self.transform(sample)
