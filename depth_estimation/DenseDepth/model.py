@@ -22,7 +22,7 @@ class Encoder(nn.Module):
 
     def __init__(self):
         super().__init__()
-        self.feature_extractor = models.densenet161(pretrained=True)
+        self.feature_extractor = models.densenet121(pretrained=True)
         self.skipped_layer = ['conv0', 'pool0', 'transition1', 'transition2', 'norm5']
 
     def forward(self, x):
@@ -47,12 +47,12 @@ class Decoder(nn.Module):
         # self.upconv3 = UpConv(in_ch=208+96, out_ch=104)
         # self.conv_last = nn.Conv2d(104, 1, 3, 1, 1)
 
-        self.conv0 = nn.Conv2d(2208, 896, 1, 1, 0)
-        self.upconv0 = UpConv(in_ch=896+384, out_ch=448)
-        self.upconv1 = UpConv(in_ch=448+192, out_ch=224)
-        self.upconv2 = UpConv(in_ch=224+96, out_ch=112)
-        self.upconv3 = UpConv(in_ch=112+96, out_ch=56)
-        self.conv_last = nn.Conv2d(56, 1, 3, 1, 1)
+        self.conv0 = nn.Conv2d(1024, 512, 1, 1, 0)
+        self.upconv0 = UpConv(in_ch=512+256, out_ch=256)
+        self.upconv1 = UpConv(in_ch=256+128, out_ch=128)
+        self.upconv2 = UpConv(in_ch=128+64, out_ch=64)
+        self.upconv3 = UpConv(in_ch=64+64, out_ch=32)
+        self.conv_last = nn.Conv2d(32, 1, 3, 1, 1)
 
     def forward(self, features):
         x = features[-1]
@@ -62,6 +62,7 @@ class Decoder(nn.Module):
         x = self.upconv2(x, features[-4])
         x = self.upconv3(x, features[-5])
         x = self.conv_last(x)
+        x = torch.sigmoid(x)
         return x
 
 
