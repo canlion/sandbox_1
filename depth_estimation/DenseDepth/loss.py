@@ -41,7 +41,9 @@ class ImageGradient(nn.Module):
         kernel = self.gradient_kernel.to(depth.device)
         return F.conv2d(depth, kernel, stride=1, padding=1)
 
+
 class SSIM(nn.Module):
+    """Calculate the structure similarity."""
     def __init__(self, dynamic_range=9.6, exponents=(1, 1, 1), sigma=1.5, window_size=11):
         super().__init__()
         self.C1 = (.01 * dynamic_range) ** 2
