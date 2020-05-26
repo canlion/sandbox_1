@@ -23,7 +23,7 @@ class Encoder(nn.Module):
     def __init__(self):
         super().__init__()
         self.feature_extractor = models.densenet121(pretrained=True)
-        self.skipped_layer = ['conv0', 'pool0', 'transition1', 'transition2', 'norm5']
+        self.skipped_layer = ['relu0', 'pool0', 'transition1', 'transition2', 'norm5']
 
     def forward(self, x):
         features = list()
