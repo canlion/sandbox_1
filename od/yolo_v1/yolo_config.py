@@ -1,8 +1,10 @@
-CFG = {
+from collections import OrderedDict
+
+CFG = OrderedDict({
     'data_loader': {
         'dataset': 'voc',
-        'train_tfr_pattern': '/sandbox/datasets/voc/train/*',
-        'eval_tfr_pattern': '/sandbox/datasets/voc/val/*',
+        'train_tfr_pattern': '/mnt/hdd/jinwoo/sandbox_datasets/voc_download/tfrecord/train/*',
+        'eval_tfr_pattern': '/mnt/hdd/jinwoo/sandbox_datasets/voc_download/tfrecord/val/*',
     },
     'network': {
         'input_size': [448, 448, 3],
@@ -22,19 +24,19 @@ CFG = {
         }
     },
     'train': {
-        'mixed_precision': False,
-        'total_step': 240000,
-        'eval_step': 2000,
-        'train_batch_size': 8,
+        'mixed_precision': True,
+        'total_step': 480000,
+        'eval_step': 4000,
+        'batch_size': 4,
         'learning_rate': {
             'schedule': 'PiecewiseConstantDecay',
-            'boundaries': [12000, 18000],
+            'boundaries': [24000, 36000],
             'values': [1e-4, 1e-5, 1e-6],
             'warmup_learning_rate': 1e-5,
-            'warmup_steps': 2000,
+            'warmup_steps': 4000,
         },
         'optimizer': {
             'policy': 'Adam',
         }
     }
-}
+})
