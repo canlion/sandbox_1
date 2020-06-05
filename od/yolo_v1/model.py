@@ -23,23 +23,23 @@ class YoloV1(tf.keras.Model):
     def build_network(self):
         self.net = tf.keras.Sequential([
             self.backbone.network,
-            # tf.keras.layers.Conv2D(1024, 3, 1, 'same', kernel_regularizer=self.regularizer),
-            # tf.keras.layers.ReLU(negative_slope=self.negative_slope),
-            # tf.keras.layers.Conv2D(1024, 3, 1, 'same', kernel_regularizer=self.regularizer),
-            # tf.keras.layers.ReLU(negative_slope=self.negative_slope),
-            # tf.keras.layers.Flatten(),
-            # tf.keras.layers.Dense(2048, kernel_regularizer=self.regularizer),
-            # tf.keras.layers.ReLU(negative_slope=self.negative_slope),
-            # tf.keras.layers.Dropout(.5),
-            # tf.keras.layers.Dense(self.S*self.S*(self.B*5+self.classes), kernel_regularizer=self.regularizer),
-            # tf.keras.layers.Reshape((self.S, self.S, (self.B*5+self.classes))),
-            ResidualBlock(256, 2, self.regularizer, True, self.negative_slope),
-            ResidualBlock(256, 1, self.regularizer, True, self.negative_slope),
-            ResidualBlock(128, 1, self.regularizer, True, self.negative_slope),
-            tf.keras.layers.Conv2D(self.B * 5 + self.classes, 1, 1, 'same',
-                                   kernel_regularizer=self.regularizer,
-                                   kernel_initializer=tf.keras.initializers.he_normal(),
-                                   activation='linear')
+            tf.keras.layers.Conv2D(512, 3, 1, 'same', kernel_regularizer=self.regularizer),
+            tf.keras.layers.ReLU(negative_slope=self.negative_slope),
+            tf.keras.layers.Conv2D(512, 3, 1, 'same', kernel_regularizer=self.regularizer),
+            tf.keras.layers.ReLU(negative_slope=self.negative_slope),
+            tf.keras.layers.Flatten(),
+            tf.keras.layers.Dense(1024, kernel_regularizer=self.regularizer),
+            tf.keras.layers.ReLU(negative_slope=self.negative_slope),
+            tf.keras.layers.Dropout(.5),
+            tf.keras.layers.Dense(self.S*self.S*(self.B*5+self.classes), kernel_regularizer=self.regularizer),
+            tf.keras.layers.Reshape((self.S, self.S, (self.B*5+self.classes))),
+            # ResidualBlock(256, 2, self.regularizer, True, self.negative_slope),
+            # ResidualBlock(256, 1, self.regularizer, True, self.negative_slope),
+            # ResidualBlock(128, 1, self.regularizer, True, self.negative_slope),
+            # tf.keras.layers.Conv2D(self.B * 5 + self.classes, 1, 1, 'same',
+            #                        kernel_regularizer=self.regularizer,
+            #                        kernel_initializer=tf.keras.initializers.he_normal(),
+            #                        activation='linear')
         ])
 
     def call(self, inputs, training=False):
