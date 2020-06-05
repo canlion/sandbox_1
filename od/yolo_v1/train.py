@@ -90,25 +90,31 @@ def eval(x, y, mp=False):
 
 
 if __name__ == '__main__':
-    report_format = '{} steps - train loss : {:.3f} / validation loss : {:.3f}'
+    train_report_format = '[{:3}, {:6}] mean loss : {} / lr : {:.6f} / ignored step : {}'
+    report_format = '[----- evaluation {:3} -----] mean loss : {:.3f}'
     train_fn = train_network_mp if mp else train
     ignored_step = 0
 
-    for step, (x, y) in enumerate(train_ds):
+    for step, (x, y) in enumerate(train_ds, 0):
         t_loss = train_fn(x, y)
 
-        if step % (params.train.eval_step//10) == 0:
+        if (step+1) % (params.train.eval_step//10) == 0:
             opt_step = tf.cast(optimizer._optimizer._iterations if mp else optimizer._iterations, tf.float32)
-            ignored_step = (step - opt_step)
-            print('{} step - train loss : {} / lr : {:.6f} / ignored step : {}'.format(step, t_loss, optimizer.lr(opt_step), ignored_step))
+            ignored_step = (step+ - opt_step)
+            print(train_report_format.format(step//params.train.eval_step + 1,
+                                             step + 1,
+                                             loss_mean_train.result(),
+                                             optimizer.lr(opt_step),
+                                             ignored_step))
+            with summary_writer_train.as_default():
+                tf.summary.scalar('loss', loss_mean_train.result(), step=step)
+            loss_mean_train.reset_states()
 
-        if step and step % params.train.eval_step == 0:
+        if step and (step+1) % params.train.eval_step == 0:
             for x, y in eval_ds:
                 eval(x, y)
 
-            print(report_format.format(step, loss_mean_train.result(), loss_mean_eval.result()))
-            with summary_writer_train.as_default():
-                tf.summary.scalar('loss', loss_mean_train.result(), step=step)
+            print(report_format.format(step//params.train.eval_step + 1, loss_mean_eval.result()))
             with summary_writer_eval.as_default():
                 tf.summary.scalar('loss', loss_mean_eval.result(), step=step)
             loss_mean_train.reset_states()
