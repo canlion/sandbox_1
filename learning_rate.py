@@ -1,10 +1,11 @@
 import tensorflow as tf
+from tensorflow.keras.optimizers.schedules import *
 
 
 def get_learning_rate(params):
     params_dict = params.train.learning_rate._asdict()
     policy = params_dict.pop('schedule')
-    schedule = eval('tf.keras.optimizers.schedules.{}'.format(policy))
+    schedule = eval('policy')
 
     if params_dict.get('warmup_steps'):
         warmup_lr = params_dict.pop('warmup_learning_rate')
