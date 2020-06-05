@@ -17,7 +17,7 @@ class ResNet:
         }
 
         model_weights = {
-            50: '/hdd/jinwoo/sandbox_datasets/pre_trained/resnet50_weights_tf_dim_ordering_tf_kernels_notop.h5'
+            50: '/mnt/hdd/jinwoo/sandbox_datasets/pre_trained/resnet50_weights_tf_dim_ordering_tf_kernels_notop.h5'
         }
 
         architecture = model_config[params.network.backbone.depth]
@@ -25,7 +25,7 @@ class ResNet:
         self.n_list = architecture['layers']
         self.input_size = params.network.input_size
         self.regularizer = tf.keras.regularizers.l2(params.network.backbone.l2_decay)
-        self.negative_slope = params.network.backbone.negative_slope
+        self.negative_slope = params.network.negative_slope
 
         self.network, self.intermediate = self.generate_network()
         self.network.load_weights(model_weights[params.network.backbone.depth])
